@@ -17,6 +17,7 @@ Live at: https://shpara.com/papashopa (noindex — portfolio demo)
 - Astro (static output), no frameworks, vanilla JS for all interactivity.
 - `src/data/products.json` — the catalog; `public/shop.js` — the localStorage store (`PS.*` API).
 - Served under `base: /papashopa`, same setup as the other shpara.com sub-sites.
+- GA4 ecommerce funnel (prod builds only): `view_item_list`, `view_item`, `add_to_cart`, `remove_from_cart`, `view_cart`, `begin_checkout`, `add_shipping_info`, `purchase`. In dev builds events log to the console as `[ga4] …` instead.
 
 ## Develop
 

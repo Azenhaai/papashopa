@@ -194,6 +194,12 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     });
 
     document.getElementById('to-step-3').addEventListener('click', function () {
+      PS.track('add_shipping_info', {
+        currency: 'EUR',
+        value: totals().total,
+        shipping_tier: SHIP[state.ship].label,
+        items: PS.gaCartItems(),
+      });
       renderReview();
       showStep(3);
     });
@@ -212,17 +218,26 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     });
 
     document.getElementById('place-order').addEventListener('click', function () {
+      var gaItems = PS.gaCartItems();
       var order = PS.placeOrder({
         shippingCost: SHIP[state.ship].cost,
         shippingLabel: SHIP[state.ship].label,
         address: { name: val('f-name'), email: val('f-email'), city: val('f-city'), street: val('f-street') },
       });
       if (!order) return;
+      PS.track('purchase', {
+        transaction_id: order.id,
+        currency: 'EUR',
+        value: order.total,
+        shipping: order.shipping,
+        items: gaItems,
+      });
       document.getElementById('done-id').textContent = order.id;
       document.getElementById('done-pts').textContent = order.pointsEarned;
       showStep(4);
     });
 
     showStep(1);
+    PS.track('begin_checkout', { currency: 'EUR', value: totals().total, items: PS.gaCartItems() });
   }
 </script>

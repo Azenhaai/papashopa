@@ -40,6 +40,17 @@ const catalog = Object.fromEntries(products.map((p) => [p.slug, { name: p.name, 
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
     <script is:inline set:html={`window.PAPA_CATALOG=${JSON.stringify(catalog)};window.PAPA_BASE=${JSON.stringify(base)};`} />
+    {import.meta.env.PROD && (
+      <>
+        <script is:inline async src="https://www.googletagmanager.com/gtag/js?id=G-QM1PRCY7M1"></script>
+        <script is:inline>
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-QM1PRCY7M1');
+        </script>
+      </>
+    )}
     <script is:inline src={`${base}/shop.js`}></script>
   </head>
   <body>

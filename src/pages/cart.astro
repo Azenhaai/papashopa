@@ -72,8 +72,16 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     var target = e.target;
     if (target.dataset.inc) { PS.setQty(target.dataset.inc, (PS.getCart()[target.dataset.inc] || 0) + 1); render(); }
     else if (target.dataset.dec) { PS.setQty(target.dataset.dec, (PS.getCart()[target.dataset.dec] || 0) - 1); render(); }
-    else if (target.dataset.rm) { PS.setQty(target.dataset.rm, 0); render(); }
+    else if (target.dataset.rm) {
+      var item = PS.gaItem(target.dataset.rm, PS.getCart()[target.dataset.rm] || 1);
+      if (item) PS.track('remove_from_cart', { currency: 'EUR', value: item.price * item.quantity, items: [item] });
+      PS.setQty(target.dataset.rm, 0);
+      render();
+    }
   });
 
   render();
+  if (PS.cartLines().length) {
+    PS.track('view_cart', { currency: 'EUR', value: PS.cartSubtotal(), items: PS.gaCartItems() });
+  }
 </script>

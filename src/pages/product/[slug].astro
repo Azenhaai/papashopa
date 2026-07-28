@@ -71,8 +71,13 @@ const related = products.filter((p) => p.category === product.category && p.slug
   });
   document.getElementById('add-btn').addEventListener('click', function () {
     PS.addToCart(slug, qty);
+    var item = PS.gaItem(slug, qty);
+    if (item) PS.track('add_to_cart', { currency: 'EUR', value: item.price * qty, items: [item] });
     this.textContent = '✓ Added to cart';
     var btn = this;
     setTimeout(function () { btn.innerHTML = 'Add to cart 🛒'; }, 1000);
   });
+
+  var viewItem = PS.gaItem(slug, 1);
+  if (viewItem) PS.track('view_item', { currency: 'EUR', value: viewItem.price, items: [viewItem] });
 </script>

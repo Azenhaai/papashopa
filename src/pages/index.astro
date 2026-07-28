@@ -55,7 +55,11 @@ const categories = [...new Set(products.map((p) => p.category))];
     var btn = e.target.closest('[data-add]');
     if (!btn) return;
     PS.addToCart(btn.dataset.add, 1);
+    var item = PS.gaItem(btn.dataset.add, 1);
+    if (item) PS.track('add_to_cart', { currency: 'EUR', value: item.price, items: [item] });
     btn.textContent = '✓ Added';
     setTimeout(function () { btn.textContent = '+ Cart'; }, 900);
   });
+
+  PS.track('view_item_list', { item_list_name: 'Storefront' });
 </script>

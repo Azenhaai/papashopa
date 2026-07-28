@@ -129,6 +129,25 @@
 
   function money(n) { return '€' + n.toFixed(2); }
 
+  /* GA4 ecommerce. In dev builds gtag is absent, so events fall through
+     to console.debug — grep the console for "[ga4]" to verify wiring. */
+  function track(name, params) {
+    if (params && typeof params.value === 'number') params.value = Math.round(params.value * 100) / 100;
+    if (params && typeof params.shipping === 'number') params.shipping = Math.round(params.shipping * 100) / 100;
+    if (typeof window.gtag === 'function') window.gtag('event', name, params);
+    else if (window.console && console.debug) console.debug('[ga4]', name, JSON.stringify(params));
+  }
+
+  function gaItem(slug, qty) {
+    var p = (window.PAPA_CATALOG || {})[slug];
+    if (!p) return null;
+    return { item_id: slug, item_name: p.name, item_category: p.category, price: p.price, quantity: qty || 1 };
+  }
+
+  function gaCartItems() {
+    return cartLines().map(function (l) { return gaItem(l.slug, l.qty); }).filter(Boolean);
+  }
+
   function updateBadge() {
     var count = cartCount();
     document.querySelectorAll('[data-cart-badge]').forEach(function (el) {
@@ -155,6 +174,9 @@
     placeOrder: placeOrder,
     money: money,
     updateBadge: updateBadge,
+    track: track,
+    gaItem: gaItem,
+    gaCartItems: gaCartItems,
   };
 
   if (document.readyState === 'loading') {

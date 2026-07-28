@@ -1,0 +1,79 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+<BaseLayout active="cart" title="Cart">
+  <main>
+    <div class="wrap">
+      <h1 class="section-title" style="font-size:26px">Your cart</h1>
+      <div id="cart-empty" class="empty" style="display:none">
+        <div class="big">🛒</div>
+        <h2>Cart is empty</h2>
+        <p>Papa needs supplies. Go grab something nice.</p>
+        <a class="btn" href={`${base}/`}>Browse the shop</a>
+      </div>
+      <div class="two-col" id="cart-full" style="display:none">
+        <div class="panel">
+          <div id="cart-lines"></div>
+        </div>
+        <div class="panel">
+          <div class="summary-row"><span class="muted">Subtotal</span><b id="sum-subtotal"></b></div>
+          <div class="summary-row" id="sum-tier-row" style="display:none">
+            <span class="muted">Loyalty discount (<span id="sum-tier-name"></span>)</span>
+            <b class="discount" id="sum-discount"></b>
+          </div>
+          <div class="summary-row"><span class="muted">Delivery</span><span class="muted">calculated at checkout</span></div>
+          <div class="summary-row total"><span>Total</span><b id="sum-total"></b></div>
+          <a class="btn wide" href={`${base}/checkout`} style="margin-top:16px">Proceed to checkout →</a>
+          <p class="note" style="margin-top:12px">Demo checkout — no payment details are ever asked for.</p>
+        </div>
+      </div>
+    </div>
+  </main>
+</BaseLayout>
+
+<script is:inline>
+  function render() {
+    var lines = PS.cartLines();
+    document.getElementById('cart-empty').style.display = lines.length ? 'none' : '';
+    document.getElementById('cart-full').style.display = lines.length ? '' : 'none';
+    if (!lines.length) return;
+
+    var host = document.getElementById('cart-lines');
+    host.innerHTML = '';
+    lines.forEach(function (l) {
+      var row = document.createElement('div');
+      row.className = 'cart-line';
+      row.innerHTML =
+        '<div class="pic">' + l.emoji + '</div>' +
+        '<div><b>' + l.name + '</b><div class="note">' + PS.money(l.price) + ' each</div></div>' +
+        '<div class="qty">' +
+          '<button data-dec="' + l.slug + '">−</button><b>' + l.qty + '</b><button data-inc="' + l.slug + '">+</button>' +
+        '</div>' +
+        '<b class="line-total">' + PS.money(l.total) + '</b>' +
+        '<button class="line-remove" data-rm="' + l.slug + '" title="Remove">✕</button>';
+      host.appendChild(row);
+    });
+
+    var subtotal = PS.cartSubtotal();
+    var tier = PS.currentTier();
+    var discount = subtotal * (tier.discount / 100);
+    document.getElementById('sum-subtotal').textContent = PS.money(subtotal);
+    var tierRow = document.getElementById('sum-tier-row');
+    tierRow.style.display = tier.discount > 0 ? '' : 'none';
+    if (tier.discount > 0) {
+      document.getElementById('sum-tier-name').textContent = tier.name + ' −' + tier.discount + '%';
+      document.getElementById('sum-discount').textContent = '−' + PS.money(discount);
+    }
+    document.getElementById('sum-total').textContent = PS.money(subtotal - discount);
+  }
+
+  document.addEventListener('click', function (e) {
+    var target = e.target;
+    if (target.dataset.inc) { PS.setQty(target.dataset.inc, (PS.getCart()[target.dataset.inc] || 0) + 1); render(); }
+    else if (target.dataset.dec) { PS.setQty(target.dataset.dec, (PS.getCart()[target.dataset.dec] || 0) - 1); render(); }
+    else if (target.dataset.rm) { PS.setQty(target.dataset.rm, 0); render(); }
+  });
+
+  render();
+</script>

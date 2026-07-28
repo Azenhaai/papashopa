@@ -1,0 +1,67 @@
+---
+import '../styles/global.css';
+import products from '../data/products.json';
+
+interface Props { title?: string; description?: string; active?: string; }
+const { title, description, active } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+const nav = [
+  { id: 'shop', label: 'Shop', href: `${base}/` },
+  { id: 'cart', label: 'Cart', href: `${base}/cart` },
+  { id: 'account', label: 'Account', href: `${base}/account` },
+  { id: 'loyalty', label: 'Loyalty', href: `${base}/loyalty` },
+];
+
+const fullTitle = title ? `${title} · PapaShopa` : 'PapaShopa — The Demo Store for Papas';
+const desc = description ?? 'PapaShopa is a demo storefront: browse the catalog, walk the checkout, collect loyalty points. No real orders, no real payments.';
+const canonical = new URL(Astro.url.pathname, 'https://shpara.com').href;
+
+// Minimal catalog exposed to client-side scripts (cart, checkout).
+const catalog = Object.fromEntries(products.map((p) => [p.slug, { name: p.name, price: p.price, emoji: p.emoji, category: p.category }]));
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="icon" type="image/svg+xml" href={`${base}/favicon.svg`} />
+    <meta name="theme-color" content="#e07b28" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={desc} />
+    <link rel="canonical" href={canonical} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="PapaShopa" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={desc} />
+    <meta property="og:url" content={canonical} />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+    <script is:inline set:html={`window.PAPA_CATALOG=${JSON.stringify(catalog)};window.PAPA_BASE=${JSON.stringify(base)};`} />
+    <script is:inline src={`${base}/shop.js`}></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap">
+        <a class="logo" href={`${base}/`}><span class="mark">🛒</span>Papa<em>Shopa</em></a>
+        <nav class="nav">
+          {nav.map((n) => (
+            <a href={n.href} class={active === n.id ? 'active' : ''}>
+              {n.label}
+              {n.id === 'cart' && <span class="cart-badge" data-cart-badge>0</span>}
+            </a>
+          ))}
+        </nav>
+      </div>
+    </header>
+    <slot />
+    <footer class="site-footer">
+      <div class="wrap">
+        PapaShopa is a portfolio demo storefront by Kirill Shpara. Everything is mock data stored in your browser — no real products, orders or payments. ·
+        <a href="https://shpara.com">shpara.com</a>
+      </div>
+    </footer>
+  </body>
+</html>

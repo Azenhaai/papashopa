@@ -1,0 +1,96 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+<BaseLayout active="account" title="Account">
+  <main>
+    <div class="wrap">
+      <h1 class="section-title" style="font-size:26px">My account</h1>
+      <div class="two-col">
+        <div>
+          <h2 class="section-title" style="margin-top:0">Order history</h2>
+          <div id="orders"></div>
+          <div id="orders-empty" class="empty" style="display:none">
+            <div class="big">📦</div>
+            <h2>No orders yet</h2>
+            <p>Place a demo order and it will show up here.</p>
+            <a class="btn" href={`${base}/`}>Go shopping</a>
+          </div>
+        </div>
+        <div>
+          <div class="panel">
+            <h3 style="margin:0 0 4px">Profile</h3>
+            <p class="note">Lives only in this browser's localStorage.</p>
+            <label for="p-name">Name</label>
+            <input type="text" id="p-name" placeholder="Papa Example" autocomplete="off" />
+            <label for="p-email">Email</label>
+            <input type="email" id="p-email" placeholder="papa@example.com" autocomplete="off" />
+            <button class="btn wide" id="p-save" style="margin-top:16px">Save profile</button>
+          </div>
+          <div class="panel" style="margin-top:16px">
+            <h3 style="margin:0 0 8px">Loyalty</h3>
+            <div class="summary-row"><span class="muted">Tier</span><b id="a-tier"></b></div>
+            <div class="summary-row"><span class="muted">Points</span><b id="a-points"></b></div>
+            <a class="btn ghost wide" href={`${base}/loyalty`} style="margin-top:10px">Open loyalty card →</a>
+          </div>
+          <div class="panel" style="margin-top:16px">
+            <h3 style="margin:0 0 8px">Demo data</h3>
+            <p class="note">Wipe cart, orders, profile and points from this browser.</p>
+            <button class="btn ghost wide" id="p-reset" style="margin-top:8px; color:var(--red); border-color:var(--red)">Reset demo data</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</BaseLayout>
+
+<script is:inline>
+  function renderOrders() {
+    var orders = PS.getOrders();
+    document.getElementById('orders-empty').style.display = orders.length ? 'none' : '';
+    var host = document.getElementById('orders');
+    host.innerHTML = '';
+    orders.forEach(function (o) {
+      var box = document.createElement('div');
+      box.className = 'order-item';
+      var date = new Date(o.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+      var linesHtml = o.lines.map(function (l) {
+        return '<li>' + l.emoji + ' ' + l.name + ' × ' + l.qty + ' — ' + PS.money(l.total) + '</li>';
+      }).join('');
+      box.innerHTML =
+        '<div class="order-head"><span>' + o.id + '</span><span class="muted">' + date + ' · ' + o.shippingLabel + '</span><span>' + PS.money(o.total) + '</span></div>' +
+        '<ul class="order-lines">' + linesHtml + '</ul>' +
+        '<div class="note" style="margin-top:6px">+' + o.pointsEarned + ' points' + (o.discount > 0 ? ' · loyalty discount −' + PS.money(o.discount) : '') + '</div>';
+      host.appendChild(box);
+    });
+  }
+
+  function renderSide() {
+    var profile = PS.getProfile();
+    document.getElementById('p-name').value = profile.name || '';
+    document.getElementById('p-email').value = profile.email || '';
+    document.getElementById('a-tier').textContent = PS.currentTier().name;
+    document.getElementById('a-points').textContent = PS.lifetimePoints();
+  }
+
+  document.getElementById('p-save').addEventListener('click', function () {
+    PS.saveProfile({
+      name: document.getElementById('p-name').value.trim(),
+      email: document.getElementById('p-email').value.trim(),
+    });
+    this.textContent = '✓ Saved';
+    var btn = this;
+    setTimeout(function () { btn.textContent = 'Save profile'; }, 1000);
+  });
+
+  document.getElementById('p-reset').addEventListener('click', function () {
+    if (!confirm('Wipe all PapaShopa demo data from this browser?')) return;
+    ['ps-cart', 'ps-orders', 'ps-profile'].forEach(function (k) { localStorage.removeItem(k); });
+    PS.updateBadge();
+    renderOrders();
+    renderSide();
+  });
+
+  renderOrders();
+  renderSide();
+</script>

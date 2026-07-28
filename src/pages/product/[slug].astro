@@ -1,0 +1,78 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import products from '../../data/products.json';
+
+export function getStaticPaths() {
+  return products.map((p) => ({ params: { slug: p.slug }, props: { product: p } }));
+}
+
+const { product } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const related = products.filter((p) => p.category === product.category && p.slug !== product.slug).slice(0, 3);
+---
+<BaseLayout active="shop" title={product.name} description={product.blurb}>
+  <main>
+    <div class="wrap">
+      <p class="note" style="margin-top:8px"><a href={`${base}/`}>← Back to shop</a></p>
+      <div class="two-col" style="margin-top:14px">
+        <div class="panel" style="text-align:center; padding:60px 20px">
+          <div style="font-size:120px; line-height:1">{product.emoji}</div>
+        </div>
+        <div>
+          <span class="cat">{product.category}</span>
+          <h1 style="margin:6px 0 10px; font-size:28px; font-weight:900">{product.name}</h1>
+          <p style="color:var(--muted)">{product.blurb}</p>
+          <p class="price" style="font-size:26px; margin:18px 0">
+            {product.oldPrice && <span class="old">€{product.oldPrice.toFixed(2)}</span>}
+            €{product.price.toFixed(2)}
+          </p>
+          <div style="display:flex; gap:10px; align-items:center">
+            <div class="qty">
+              <button id="q-minus">−</button>
+              <b id="q-val">1</b>
+              <button id="q-plus">+</button>
+            </div>
+            <button class="btn" id="add-btn">Add to cart 🛒</button>
+          </div>
+          <p class="note" style="margin-top:16px">Free standard delivery over the rainbow. This is a demo — nothing ships, nothing charges.</p>
+        </div>
+      </div>
+
+      {related.length > 0 && (
+        <>
+          <h2 class="section-title">More from {product.category}</h2>
+          <div class="grid">
+            {related.map((p) => (
+              <div class="card">
+                <a class="pic" href={`${base}/product/${p.slug}`}>{p.emoji}</a>
+                <h3><a href={`${base}/product/${p.slug}`}>{p.name}</a></h3>
+                <span class="cat">{p.category}</span>
+                <div class="row">
+                  <span class="price">€{p.price.toFixed(2)}</span>
+                  <a class="btn small ghost" href={`${base}/product/${p.slug}`}>View</a>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  </main>
+</BaseLayout>
+
+<script is:inline define:vars={{ slug: product.slug }}>
+  var qty = 1;
+  var qVal = document.getElementById('q-val');
+  document.getElementById('q-minus').addEventListener('click', function () {
+    qty = Math.max(1, qty - 1); qVal.textContent = qty;
+  });
+  document.getElementById('q-plus').addEventListener('click', function () {
+    qty = Math.min(99, qty + 1); qVal.textContent = qty;
+  });
+  document.getElementById('add-btn').addEventListener('click', function () {
+    PS.addToCart(slug, qty);
+    this.textContent = '✓ Added to cart';
+    var btn = this;
+    setTimeout(function () { btn.innerHTML = 'Add to cart 🛒'; }, 1000);
+  });
+</script>

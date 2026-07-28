@@ -1,0 +1,89 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+<BaseLayout active="loyalty" title="Loyalty Card">
+  <main>
+    <div class="wrap">
+      <h1 class="section-title" style="font-size:26px">Papa Club loyalty card</h1>
+      <div class="two-col">
+        <div>
+          <div class="loyal-card" id="lc">
+            <div class="lc-brand">🛒 PAPA CLUB</div>
+            <div class="lc-tier" id="lc-tier"></div>
+            <div class="lc-number" id="lc-number"></div>
+            <div class="lc-holder" id="lc-holder"></div>
+            <div class="lc-points">Points balance: <b id="lc-points"></b></div>
+            <div class="barcode">
+              <svg id="lc-barcode" preserveAspectRatio="none"></svg>
+              <div class="bc-num" id="lc-bcnum"></div>
+            </div>
+          </div>
+          <p class="note" style="margin-top:14px">Every €1 of a placed demo order earns 1 point. The barcode is decorative — scan it at your imaginary till.</p>
+        </div>
+        <div>
+          <div class="panel">
+            <h3 style="margin:0 0 6px">Progress to next tier</h3>
+            <div id="lc-next" class="note"></div>
+            <div class="progress"><div id="lc-bar" style="width:0%"></div></div>
+          </div>
+          <div class="tier-track" id="tier-track"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</BaseLayout>
+
+<script is:inline>
+  var profile = PS.getProfile();
+  var points = PS.lifetimePoints();
+  var tier = PS.currentTier();
+  var next = PS.nextTier();
+
+  var card = document.getElementById('lc');
+  card.classList.add(tier.id);
+  document.getElementById('lc-tier').textContent = tier.name;
+  document.getElementById('lc-number').textContent = profile.card.replace(/(\d{4})(?=\d)/g, '$1 ');
+  document.getElementById('lc-holder').textContent = profile.name || 'Unnamed Papa';
+  document.getElementById('lc-points').textContent = points;
+  document.getElementById('lc-bcnum').textContent = profile.card;
+
+  // Decorative barcode: stripe widths derived from card digits.
+  var svg = document.getElementById('lc-barcode');
+  var x = 0;
+  var bars = [];
+  profile.card.split('').forEach(function (d) {
+    var digit = +d;
+    var wide = 2 + (digit % 3);
+    var gap = 1 + (digit % 2);
+    bars.push('<rect x="' + x + '" y="0" width="' + wide + '" height="40" fill="#222"/>');
+    x += wide + gap;
+    bars.push('<rect x="' + x + '" y="0" width="1" height="40" fill="#222"/>');
+    x += 1 + gap;
+  });
+  svg.setAttribute('viewBox', '0 0 ' + x + ' 40');
+  svg.innerHTML = bars.join('');
+
+  var nextEl = document.getElementById('lc-next');
+  var bar = document.getElementById('lc-bar');
+  if (next) {
+    var prevMin = tier.min;
+    var pct = Math.min(100, Math.round(((points - prevMin) / (next.min - prevMin)) * 100));
+    nextEl.innerHTML = '<b>' + (next.min - points) + '</b> more points to <b>' + next.name + '</b> (' + next.discount + '% off every order)';
+    bar.style.width = pct + '%';
+  } else {
+    nextEl.innerHTML = 'You reached <b>Gold</b> — the top of the Papa Club. Enjoy the view. 🏆';
+    bar.style.width = '100%';
+  }
+
+  var track = document.getElementById('tier-track');
+  PS.TIERS.forEach(function (t) {
+    var box = document.createElement('div');
+    box.className = 'tier-box' + (t.id === tier.id ? ' on' : '');
+    box.innerHTML =
+      '<div class="t-name">' + t.name + (t.id === tier.id ? ' · you' : '') + '</div>' +
+      '<div class="t-req">' + (t.min === 0 ? 'From the first order' : t.min + '+ points') + '</div>' +
+      '<div class="t-perk">' + (t.discount ? '−' + t.discount + '% on every order' : 'Welcome tier') + '</div>';
+    track.appendChild(box);
+  });
+</script>

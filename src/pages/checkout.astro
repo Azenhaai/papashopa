@@ -1,0 +1,228 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+<BaseLayout active="cart" title="Checkout">
+  <main>
+    <div class="wrap">
+      <h1 class="section-title" style="font-size:26px">Checkout</h1>
+
+      <div id="co-empty" class="empty" style="display:none">
+        <div class="big">🤷</div>
+        <h2>Nothing to check out</h2>
+        <p>Your cart is empty — the till stays quiet.</p>
+        <a class="btn" href={`${base}/`}>Back to shop</a>
+      </div>
+
+      <div id="co-flow" style="display:none">
+        <div class="steps">
+          <span class="step" data-step-pill="1"><span class="n">1</span> Address</span>
+          <span class="step" data-step-pill="2"><span class="n">2</span> Delivery</span>
+          <span class="step" data-step-pill="3"><span class="n">3</span> Review</span>
+        </div>
+
+        <div class="two-col">
+          <div>
+            <!-- Step 1: address -->
+            <div class="panel" data-step-panel="1">
+              <h2 style="margin:0 0 6px">Shipping address</h2>
+              <p class="note">Demo form — feel free to invent everything.</p>
+              <label for="f-name">Full name</label>
+              <input type="text" id="f-name" placeholder="Papa Example" autocomplete="off" />
+              <label for="f-email">Email (for the fake receipt)</label>
+              <input type="email" id="f-email" placeholder="papa@example.com" autocomplete="off" />
+              <label for="f-city">City</label>
+              <input type="text" id="f-city" placeholder="Funchal" autocomplete="off" />
+              <label for="f-street">Street & house</label>
+              <input type="text" id="f-street" placeholder="Rua das Levadas 42" autocomplete="off" />
+              <div style="margin-top:20px; text-align:right">
+                <button class="btn" id="to-step-2">Continue to delivery →</button>
+              </div>
+            </div>
+
+            <!-- Step 2: delivery -->
+            <div class="panel" data-step-panel="2" style="display:none">
+              <h2 style="margin:0 0 6px">Delivery method</h2>
+              <label class="radio-card on" data-ship="standard">
+                <input type="radio" name="ship" value="standard" checked />
+                <span class="rc-main"><span class="rc-title">Standard 📦</span><br /><span class="rc-sub">3–5 imaginary days</span></span>
+                <span class="rc-price">Free</span>
+              </label>
+              <label class="radio-card" data-ship="express">
+                <input type="radio" name="ship" value="express" />
+                <span class="rc-main"><span class="rc-title">Express 🚀</span><br /><span class="rc-sub">1–2 imaginary days</span></span>
+                <span class="rc-price">€4.90</span>
+              </label>
+              <label class="radio-card" data-ship="pickup">
+                <input type="radio" name="ship" value="pickup" />
+                <span class="rc-main"><span class="rc-title">Papa Point pickup 🏪</span><br /><span class="rc-sub">Ready in 1 imaginary hour</span></span>
+                <span class="rc-price">Free</span>
+              </label>
+              <div style="margin-top:20px; display:flex; justify-content:space-between">
+                <button class="btn ghost" data-back="1">← Back</button>
+                <button class="btn" id="to-step-3">Review order →</button>
+              </div>
+            </div>
+
+            <!-- Step 3: review -->
+            <div class="panel" data-step-panel="3" style="display:none">
+              <h2 style="margin:0 0 6px">Review & place order</h2>
+              <div id="review-address" class="note" style="margin-bottom:10px"></div>
+              <div id="review-lines"></div>
+              <div style="margin-top:20px; display:flex; justify-content:space-between">
+                <button class="btn ghost" data-back="2">← Back</button>
+                <button class="btn" id="place-order">Place order (demo) ✓</button>
+              </div>
+              <p class="note" style="margin-top:12px">No payment step on purpose: this is a portfolio demo, so the order is simply saved to your browser.</p>
+            </div>
+
+            <!-- Success -->
+            <div class="panel success-box" data-step-panel="4" style="display:none">
+              <div class="big">🎉</div>
+              <h2>Order placed!</h2>
+              <p class="note">Order <b id="done-id"></b> is saved in your account history.</p>
+              <div class="pts-pill">+<span id="done-pts"></span> loyalty points earned</div>
+              <div style="margin-top:22px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap">
+                <a class="btn" href={`${base}/account`}>View in account</a>
+                <a class="btn ghost" href={`${base}/`}>Keep shopping</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel" id="co-summary">
+            <h3 style="margin:0 0 10px">Order summary</h3>
+            <div class="summary-row"><span class="muted">Subtotal</span><b id="s-sub"></b></div>
+            <div class="summary-row" id="s-disc-row" style="display:none">
+              <span class="muted">Loyalty discount (<span id="s-tier"></span>)</span>
+              <b class="discount" id="s-disc"></b>
+            </div>
+            <div class="summary-row"><span class="muted">Delivery</span><b id="s-ship"></b></div>
+            <div class="summary-row total"><span>Total</span><b id="s-total"></b></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</BaseLayout>
+
+<script is:inline>
+  var SHIP = {
+    standard: { label: 'Standard', cost: 0 },
+    express: { label: 'Express', cost: 4.9 },
+    pickup: { label: 'Papa Point pickup', cost: 0 },
+  };
+  var state = { step: 1, ship: 'standard' };
+
+  function lines() { return PS.cartLines(); }
+
+  function totals() {
+    var subtotal = PS.cartSubtotal();
+    var tier = PS.currentTier();
+    var discount = subtotal * (tier.discount / 100);
+    var shipping = SHIP[state.ship].cost;
+    return { subtotal: subtotal, tier: tier, discount: discount, shipping: shipping, total: subtotal - discount + shipping };
+  }
+
+  function renderSummary() {
+    var t = totals();
+    document.getElementById('s-sub').textContent = PS.money(t.subtotal);
+    var discRow = document.getElementById('s-disc-row');
+    discRow.style.display = t.tier.discount > 0 ? '' : 'none';
+    if (t.tier.discount > 0) {
+      document.getElementById('s-tier').textContent = t.tier.name + ' −' + t.tier.discount + '%';
+      document.getElementById('s-disc').textContent = '−' + PS.money(t.discount);
+    }
+    document.getElementById('s-ship').textContent = t.shipping ? PS.money(t.shipping) : 'Free';
+    document.getElementById('s-total').textContent = PS.money(t.total);
+  }
+
+  function showStep(n) {
+    state.step = n;
+    document.querySelectorAll('[data-step-panel]').forEach(function (p) {
+      p.style.display = p.dataset.stepPanel == n ? '' : 'none';
+    });
+    document.querySelectorAll('[data-step-pill]').forEach(function (p) {
+      var num = +p.dataset.stepPill;
+      p.classList.toggle('on', num === n);
+      p.classList.toggle('done', num < n);
+    });
+    if (n === 4) document.getElementById('co-summary').style.display = 'none';
+    renderSummary();
+  }
+
+  function val(id) { return document.getElementById(id).value.trim(); }
+
+  function validateAddress() {
+    var ok = true;
+    ['f-name', 'f-city', 'f-street'].forEach(function (id) {
+      var el = document.getElementById(id);
+      var bad = !el.value.trim();
+      el.classList.toggle('field-err', bad);
+      if (bad) ok = false;
+    });
+    return ok;
+  }
+
+  function renderReview() {
+    document.getElementById('review-address').innerHTML =
+      '<b>' + val('f-name') + '</b> · ' + val('f-street') + ', ' + val('f-city') +
+      ' · ' + SHIP[state.ship].label;
+    var host = document.getElementById('review-lines');
+    host.innerHTML = '';
+    lines().forEach(function (l) {
+      var row = document.createElement('div');
+      row.className = 'summary-row';
+      row.innerHTML = '<span class="muted">' + l.emoji + ' ' + l.name + ' × ' + l.qty + '</span><b>' + PS.money(l.total) + '</b>';
+      host.appendChild(row);
+    });
+  }
+
+  // Wiring
+  var isEmpty = !lines().length;
+  document.getElementById('co-empty').style.display = isEmpty ? '' : 'none';
+  document.getElementById('co-flow').style.display = isEmpty ? 'none' : '';
+
+  if (!isEmpty) {
+    var profile = PS.getProfile();
+    if (profile.name) document.getElementById('f-name').value = profile.name;
+    if (profile.email) document.getElementById('f-email').value = profile.email;
+
+    document.getElementById('to-step-2').addEventListener('click', function () {
+      if (!validateAddress()) return;
+      PS.saveProfile({ name: val('f-name'), email: val('f-email') });
+      showStep(2);
+    });
+
+    document.getElementById('to-step-3').addEventListener('click', function () {
+      renderReview();
+      showStep(3);
+    });
+
+    document.querySelectorAll('[data-back]').forEach(function (b) {
+      b.addEventListener('click', function () { showStep(+b.dataset.back); });
+    });
+
+    document.querySelectorAll('.radio-card[data-ship]').forEach(function (card) {
+      card.addEventListener('click', function () {
+        document.querySelectorAll('.radio-card').forEach(function (c) { c.classList.remove('on'); });
+        card.classList.add('on');
+        state.ship = card.dataset.ship;
+        renderSummary();
+      });
+    });
+
+    document.getElementById('place-order').addEventListener('click', function () {
+      var order = PS.placeOrder({
+        shippingCost: SHIP[state.ship].cost,
+        shippingLabel: SHIP[state.ship].label,
+        address: { name: val('f-name'), email: val('f-email'), city: val('f-city'), street: val('f-street') },
+      });
+      if (!order) return;
+      document.getElementById('done-id').textContent = order.id;
+      document.getElementById('done-pts').textContent = order.pointsEarned;
+      showStep(4);
+    });
+
+    showStep(1);
+  }
+</script>

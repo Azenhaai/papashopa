@@ -1,0 +1,15 @@
+{
+  "currency": "EUR",
+  "currencySymbol": "€",
+  "pointsPerCurrencyUnit": 1,
+  "tiers": [
+    { "id": "bronze", "name": "Bronze", "min": 0, "discount": 0 },
+    { "id": "silver", "name": "Silver", "min": 150, "discount": 3 },
+    { "id": "gold", "name": "Gold", "min": 400, "discount": 5 }
+  ],
+  "shipping": [
+    { "id": "standard", "label": "Standard", "emoji": "📦", "cost": 0, "eta": "3–5 imaginary days" },
+    { "id": "express", "label": "Express", "emoji": "🚀", "cost": 4.9, "eta": "1–2 imaginary days" },
+    { "id": "pickup", "label": "Papa Point pickup", "emoji": "🏪", "cost": 0, "eta": "Ready in 1 imaginary hour" }
+  ]
+}

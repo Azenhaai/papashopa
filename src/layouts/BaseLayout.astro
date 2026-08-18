@@ -15,7 +15,10 @@ const nav = [
 
 const fullTitle = title ? `${title} · PapaShopa` : 'PapaShopa — The Demo Store for Papas';
 const desc = description ?? 'PapaShopa is a demo storefront: browse the catalog, walk the checkout, collect loyalty points. No real orders, no real payments.';
-const canonical = new URL(Astro.url.pathname, 'https://shpara.com').href;
+const canonicalPath = Astro.url.pathname.endsWith('/') ? Astro.url.pathname : Astro.url.pathname + '/';
+// Pages normalises every path to a trailing slash, so the canonical has to
+// name the form that actually answers 200 — without it, it points at a 308.
+const canonical = new URL(canonicalPath, 'https://azenha.ai').href;
 
 // Minimal catalog exposed to client-side scripts (cart, checkout).
 const catalog = Object.fromEntries(products.map((p) => [p.slug, { name: p.name, price: p.price, emoji: p.emoji, category: p.category }]));
@@ -36,25 +39,25 @@ const catalog = Object.fromEntries(products.map((p) => [p.slug, { name: p.name, 
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={desc} />
     <meta property="og:url" content={canonical} />
-    <meta property="og:image" content="https://shpara.com/papashopa/og.png" />
+    <meta property="og:image" content="https://azenha.ai/papashopa/og.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={fullTitle} />
     <meta name="twitter:description" content={desc} />
-    <meta name="twitter:image" content="https://shpara.com/papashopa/og.png" />
+    <meta name="twitter:image" content="https://azenha.ai/papashopa/og.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
     <script is:inline set:html={`window.PAPA_CATALOG=${JSON.stringify(catalog)};window.PAPA_BASE=${JSON.stringify(base)};`} />
     {import.meta.env.PROD && (
       <>
-        <script is:inline async src="https://www.googletagmanager.com/gtag/js?id=G-QM1PRCY7M1"></script>
+        <script is:inline async src="https://www.googletagmanager.com/gtag/js?id=G-M2PTQLF903"></script>
         <script is:inline>
           window.dataLayer = window.dataLayer || [];
           function gtag(){dataLayer.push(arguments);}
           gtag('js', new Date());
-          gtag('config', 'G-QM1PRCY7M1');
+          gtag('config', 'G-M2PTQLF903');
         </script>
       </>
     )}
@@ -77,8 +80,8 @@ const catalog = Object.fromEntries(products.map((p) => [p.slug, { name: p.name, 
     <slot />
     <footer class="site-footer">
       <div class="wrap">
-        PapaShopa is a portfolio demo storefront by Kirill Shpara. Everything is mock data stored in your browser — no real products, orders or payments. ·
-        <a href="https://shpara.com">shpara.com</a>
+        PapaShopa is a portfolio demo storefront by Azenha AI. Everything is mock data stored in your browser — no real products, orders or payments. ·
+        <a href="https://azenha.ai">azenha.ai</a>
       </div>
     </footer>
   </body>

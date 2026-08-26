@@ -1,9 +1,9 @@
 import { defineConfig } from 'astro/config';
 
-// PapaShopa is served from https://shpara.com/papashopa (static demo storefront).
+// PapaShopa is served from https://azenha.ai/papashopa (static demo storefront).
 // Portfolio demo: noindex, no sitemap integration, no real payments.
 export default defineConfig({
-  site: 'https://shpara.com',
+  site: 'https://azenha.ai',
   base: '/papashopa',
   trailingSlash: 'ignore',
 });

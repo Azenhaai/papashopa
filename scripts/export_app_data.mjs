@@ -91,7 +91,7 @@ write('meta.json', {
   generatedAt: new Date().toISOString(),
   products: products.length,
   categories: categories.length,
-  site: 'https://shpara.com/papashopa',
+  site: 'https://azenha.ai/papashopa',
   note: 'Demo storefront data. No real products, orders or payments.',
 });
 

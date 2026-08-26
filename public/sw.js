@@ -1,8 +1,8 @@
-/* PapaShopa service worker — минимальная офлайн-оболочка.
-   Network-first: свежесть важнее скорости, кэш выручает только когда сети нет.
-   Нужен не столько ради офлайна, сколько ради самой возможности установки:
-   без обработчика fetch Chrome не считает сайт приложением и не показывает
-   кнопку «Установить». */
+/* PapaShopa service worker — a minimal offline shell.
+   Network-first: freshness beats speed, the cache only steps in when offline.
+   It exists less for offline use than to make the site installable at all:
+   without a fetch handler Chrome does not treat the site as an app and never
+   shows the Install button. */
 const CACHE = 'papashopa-v1';
 
 self.addEventListener('install', () => self.skipWaiting());
